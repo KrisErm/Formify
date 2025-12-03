@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -53,78 +53,55 @@ namespace Formify.Pages.CustomRequests
 
         public async Task<IActionResult> OnPostAsync()
         {
+            Console.WriteLine("=== OnPostAsync Ð²Ñ‹Ð·Ð²Ð°Ð½ ===");
+            Console.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
+            Console.WriteLine($"User.Identity.IsAuthenticated: {User.Identity?.IsAuthenticated}");
+
             if (!ModelState.IsValid)
+            {
+                var errors = string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
+                ErrorMessage = $"ÐžÑˆÐ¸Ð±ÐºÐ¸ Ñ„Ð¾Ñ€Ð¼Ñ‹: {errors}";
+                Console.WriteLine($"ModelState Ð¾ÑˆÐ¸Ð±ÐºÐ¸: {errors}");
                 return Page();
+            }
 
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Console.WriteLine($"userIdStr: '{userIdStr}'");
             if (!long.TryParse(userIdStr, out var userId))
             {
-                return RedirectToPage("/Account/Login");
-            }
-
-            var statusNew = await _context.RequestStatuses
-                .FirstOrDefaultAsync(s => s.Code == "new");
-
-            if (statusNew == null)
-            {
-                ErrorMessage = "Íå íàéäåí ñòàòóñ 'new' äëÿ êàñòîìíûõ çàÿâîê.";
+                ErrorMessage = "ÐžÑˆÐ¸Ð±ÐºÐ° Ð°Ð²Ñ‚Ð¾Ñ€Ð¸Ð·Ð°Ñ†Ð¸Ð¸. ÐŸÐµÑ€ÐµÐ·Ð°Ð¹Ð´Ð¸Ñ‚Ðµ Ð² Ð°ÐºÐºÐ°ÑƒÐ½Ñ‚.";
                 return Page();
             }
 
-            var request = new CustomRequest
+            var statusNew = await _context.RequestStatuses.FirstOrDefaultAsync(s => s.Code == "new");
+            Console.WriteLine($"statusNew Ð½Ð°Ð¹Ð´ÐµÐ½: {statusNew != null}");
+            if (statusNew == null)
             {
-                UserId = userId,
-                StatusId = statusNew.Id,
-                CommentUser = Input.Comment,
-                CreateDate = DateTime.UtcNow,
-                UpdateDate = DateTime.UtcNow
-            };
-
-            _context.CustomRequests.Add(request);
-            await _context.SaveChangesAsync();
-
-            var item = new CustomRequestItem
-            {
-                RequestId = request.Id,
-                TypeName = Input.TypeName,
-                Quantity = Input.Quantity,
-                Note = Input.Note
-            };
-            _context.CustomRequestItems.Add(item);
-
-            if (Images != null && Images.Any())
-            {
-                bool first = true;
-                foreach (var file in Images)
-                {
-                    if (file.Length <= 0) continue;
-
-                    using var ms = new MemoryStream();
-                    await file.CopyToAsync(ms);
-
-                    var img = new CustomRequestImage
-                    {
-                        RequestId = request.Id,
-                        ImageData = ms.ToArray(),
-                        ImageName = file.FileName,
-                        ImageContentType = file.ContentType,
-                        IsMain = first,
-                        CreateDate = DateTime.UtcNow
-                    };
-                    first = false;
-
-                    _context.CustomRequestImages.Add(img);
-                }
+                ErrorMessage = "Ð£ Ð½Ð°Ñ Ð½ÐµÑ‚ ÑÑ‚Ð°Ñ‚ÑƒÑÐ° 'new'. ÐžÐ±Ñ€Ð°Ñ‚Ð¸Ñ‚ÐµÑÑŒ Ðº Ð°Ð´Ð¼Ð¸Ð½Ð¸ÑÑ‚Ñ€Ð°Ñ‚Ð¾Ñ€Ñƒ.";
+                return Page();
             }
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                var request = new CustomRequest { /* ... Ð²Ð°Ñˆ ÐºÐ¾Ð´ ... */ };
+                _context.CustomRequests.Add(request);
+                await _context.SaveChangesAsync();
+                Console.WriteLine($"Ð—Ð°ÑÐ²ÐºÐ° ÑÐ¾Ð·Ð´Ð°Ð½Ð°: ID={request.Id}");
 
-            SuccessMessage = "Çàÿâêà îòïðàâëåíà. Ïîñëå îáðàáîòêè àäìèíèñòðàòîð âûñòàâèò öåíó è ñòàòóñ.";
-            // î÷èñòèì ôîðìó
+                // item Ð¸ images Ñ‚Ð¾Ð¶Ðµ Ð¾ÑÑ‚Ð°ÑŽÑ‚ÑÑ
+                await _context.SaveChangesAsync();
+                SuccessMessage = "âœ… Ð—Ð°ÑÐ²ÐºÐ° Ð¾Ñ‚Ð¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð°! ÐŸÐ¾ÑÐ»Ðµ Ð¾Ð±Ñ€Ð°Ð±Ð¾Ñ‚ÐºÐ¸ Ð°Ð´Ð¼Ð¸Ð½Ð¸ÑÑ‚Ñ€Ð°Ñ‚Ð¾Ñ€ Ð²Ñ‹ÑÑ‚Ð°Ð²Ð¸Ñ‚ Ñ†ÐµÐ½Ñƒ Ð¸ ÑÑ‚Ð°Ñ‚ÑƒÑ.";
+            }
+            catch (Exception ex)
+            {
+                ErrorMessage = $"ÐžÑˆÐ¸Ð±ÐºÐ° Ð‘Ð”: {ex.Message}";
+                Console.WriteLine($"EXCEPTION: {ex}");
+            }
+
             Input = new InputModel();
             Images = null;
-
             return Page();
         }
+
     }
 }

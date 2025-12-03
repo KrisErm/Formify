@@ -42,7 +42,7 @@ namespace Formify.Pages.CustomRequests
                     .Select(r => new RequestRow
                     {
                         Id = r.Id,
-                        UserName = r.User!.Name,
+                        UserName = r.User != null ? r.User.Name : "Клиент удален",
                         StatusName = r.Status!.Name,
                         FinalPrice = r.FinalPrice,
                         CreateDate = r.CreateDate
