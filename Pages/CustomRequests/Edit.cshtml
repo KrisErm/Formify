@@ -1,0 +1,102 @@
+﻿@page "{id:long}"
+@model Formify.Pages.CustomRequests.EditModel
+@using System
+
+@{
+    ViewData["Title"] = "Заявка №" + Model.RequestId;
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">Заявка №@Model.RequestId</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">@Model.SuccessMessage</div>
+    }
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="about-card h-100">
+                <h5>Клиент</h5>
+                <p class="mb-1"><strong>Имя:</strong> @Model.UserName</p>
+                <p class="mb-1"><strong>Email:</strong> @Model.UserEmail</p>
+                <p class="mb-0"><strong>Телефон:</strong> @Model.UserPhone</p>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="about-card h-100">
+                <h5>Комментарий клиента</h5>
+                <p class="mb-0">@Model.CommentUser</p>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Позиции</h4>
+
+    <table class="table table-sm mb-4">
+        <thead>
+            <tr>
+                <th>Тип формочки</th>
+                <th>Количество</th>
+                <th>Заметка</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.TypeName</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.Note</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Images.Any())
+    {
+        <h4 class="mb-3">Изображения</h4>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            @foreach (var img in Model.Images)
+            {
+                <div>
+                    <img src="@img.Src" alt="image" style="max-width: 180px; border-radius: 0.75rem;" />
+                </div>
+            }
+        </div>
+    }
+
+    <h4 class="mb-3">Ответ администратора</h4>
+
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Input.FinalPrice" class="form-label">Итоговая цена (при необходимости)</label>
+            <input asp-for="Input.FinalPrice" class="form-control" />
+            <span asp-validation-for="Input.FinalPrice" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.CommentAdmin" class="form-label">Комментарий для клиента</label>
+            <textarea asp-for="Input.CommentAdmin" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.StatusId" class="form-label">Статус</label>
+            <select asp-for="Input.StatusId" class="form-select"
+                    asp-items="Model.Statuses"></select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a asp-page="Manage" class="btn btn-secondary">Назад</a>
+    </form>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }
+</div>

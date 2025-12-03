@@ -1,0 +1,54 @@
+﻿@page
+@model Formify.Pages.CustomRequests.ManageModel
+
+@{
+    ViewData["Title"] = "Кастомные заявки";
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">Кастомные заявки</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    @if (!Model.Requests.Any())
+    {
+        <p>Заявок пока нет.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Клиент</th>
+                        <th>Статус</th>
+                        <th>Цена</th>
+                        <th>Дата</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Requests)
+                    {
+                        <tr>
+                            <td>@r.Id</td>
+                            <td>@r.UserName</td>
+                            <td>@r.StatusName</td>
+                            <td>@(r.FinalPrice?.ToString("0.00") ?? "—") ₽</td>
+                            <td>@r.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                            <td class="text-end">
+                                <a asp-page="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary">
+                                    Открыть
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

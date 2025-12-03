@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Formify</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold" asp-page="/Index">Formify</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
+                    <!-- Левое меню -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Index">Главная</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/Catalog/Index">Каталог</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/CustomRequests/Create">Кастомный заказ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-page="/About">О нас</a>
+                        </li>
+
+                    </ul>
+
+                    <!-- Правая часть: корзина + ЛК/Вход -->
+                    <ul class="navbar-nav align-items-center">
+                        @await Component.InvokeAsync("CartSummary")
+
+                        @if (User.Identity?.IsAuthenticated ?? false)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Account/Index">
+                                    @User.Identity.Name
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-page="/Account/Logout" method="post" class="d-inline">
+                                    <button type="submit" class="nav-link btn btn-link p-0">
+                                        Выйти
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Account/Login">Войти</a>
+                            </li>
+                        }
+                    </ul>
+
+
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid p-0">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted mt-4">
+        <div class="container py-3">
+            <span>© @DateTime.Now.Year — Formify</span>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

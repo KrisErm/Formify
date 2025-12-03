@@ -1,0 +1,41 @@
+﻿@page
+@model Formify.Pages.Account.LoginModel
+
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<div class="container py-5" style="max-width: 480px;">
+    <h1 class="mb-4">Вход</h1>
+
+    <form method="post">
+        <div class="mb-3">
+            <label asp-for="Input.Email" class="form-label">Email</label>
+            <input asp-for="Input.Email" class="form-control" />
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Password" class="form-label">Пароль</label>
+            <input asp-for="Input.Password" class="form-control" type="password" />
+            <span asp-validation-for="Input.Password" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mb-3">Войти</button>
+
+        <p class="text-muted mb-0">
+            Нет аккаунта? <a asp-page="/Account/Register">Зарегистрироваться</a>
+        </p>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @Model.ErrorMessage
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

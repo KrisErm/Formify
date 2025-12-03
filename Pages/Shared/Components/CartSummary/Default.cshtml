@@ -1,0 +1,13 @@
+﻿@model int
+
+<li class="nav-item me-3">
+    <a class="nav-link position-relative cart-icon" asp-page="/Cart/Index" title="Корзина">
+        🛒
+        @if (Model > 0)
+        {
+            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                @Model
+            </span>
+        }
+    </a>
+</li>

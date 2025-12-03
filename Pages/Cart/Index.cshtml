@@ -1,0 +1,67 @@
+﻿@page
+@model Formify.Pages.Cart.IndexModel
+
+@{
+    ViewData["Title"] = "Моя корзина";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Моя корзина</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+    else if (!Model.Items.Any())
+    {
+        <p class="text-muted">Корзина пуста.</p>
+    }
+    else
+    {
+        <div class="table-responsive mb-3">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th style="width: 140px;">Количество</th>
+                        <th>Сумма</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>@item.ProductName</td>
+                            <td>@item.Price.ToString("0.00") ₽</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-1">
+                                    <form method="post" asp-page-handler="Decrease" asp-route-cartItemId="@item.CartItemId">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">-</button>
+                                    </form>
+                                    <span>@item.Quantity</span>
+                                    <form method="post" asp-page-handler="Increase" asp-route-cartItemId="@item.CartItemId">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td>@item.LineTotal.ToString("0.00") ₽</td>
+                            <td class="text-end">
+                                <form method="post" asp-page-handler="Remove" asp-route-cartItemId="@item.CartItemId">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <h4>Итого: @Model.Total.ToString("0.00") ₽</h4>
+
+        <p class="text-muted mt-2">
+            Оформление заказа и оплата будут добавлены позже.
+        </p>
+    }
+</div>

@@ -1,0 +1,66 @@
+﻿@page
+@model Formify.Pages.CustomRequests.CreateModel
+
+@{
+    ViewData["Title"] = "Кастомная формочка";
+}
+
+<div class="container py-5" style="max-width: 760px;">
+    <h1 class="mb-4">Кастомная формочка</h1>
+
+    <p class="text-muted mb-4">
+        Опишите идею, желаемое количество и приложите пример(ы) изображения —
+        по заявке администратор сформирует предложение, цену и статус.
+    </p>
+
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="alert alert-success">
+            @Model.SuccessMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">
+            @Model.ErrorMessage
+        </div>
+    }
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label asp-for="Input.TypeName" class="form-label">Тип формочки</label>
+            <input asp-for="Input.TypeName" class="form-control" placeholder="Например: форма сердца с надписью" />
+            <span asp-validation-for="Input.TypeName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Quantity" class="form-label">Количество</label>
+            <input asp-for="Input.Quantity" class="form-control" />
+            <span asp-validation-for="Input.Quantity" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Note" class="form-label">Пояснение по форме</label>
+            <textarea asp-for="Input.Note" rows="3" class="form-control"
+                      placeholder="Размеры, написи, особенности..."></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Comment" class="form-label">Общий комментарий</label>
+            <textarea asp-for="Input.Comment" rows="3" class="form-control"
+                      placeholder="Дополнительные пожелания, сроки и т.п."></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Примеры изображений (можно несколько)</label>
+            <input asp-for="Images" type="file" class="form-control" multiple accept="image/*" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Отправить заявку</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

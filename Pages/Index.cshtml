@@ -1,0 +1,142 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Formify — кастомные и готовые формочки";
+}
+
+<!-- HERO-БЛОК -->
+<div class="hero">
+    <div class="container py-5 text-center text-md-start">
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <h1 class="hero-title mb-3">
+                    Formify — формочки под ваш стиль
+                </h1>
+                <p class="hero-subtitle mb-4">
+                    Выбирайте готовые формочки из каталога или заказывайте уникальную —
+                    по вашему эскизу и пожеланиям.
+                </p>
+
+                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center justify-content-md-start">
+                    <a asp-page="/Catalog/Index" class="btn btn-primary btn-lg px-4">
+                        Перейти в каталог
+                    </a>
+                    <a asp-page="/CustomRequests/Create" class="btn btn-outline-light btn-lg px-4">
+                        Кастомный заказ
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-5 mt-4 mt-md-0 d-none d-md-block">
+                <div class="hero-card shadow-lg">
+                    <div class="hero-circle"></div>
+                    <div class="hero-card-body">
+                        <h5>Почему Formify?</h5>
+                        <ul class="mb-0">
+                            <li>Кастомные формочки по вашим эскизам</li>
+                            <li>Прозрачные цены и статусы заказов</li>
+                            <li>Удобный личный кабинет</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ЧТО МОЖНО СДЕЛАТЬ НА САЙТЕ -->
+<section class="features-section py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Что вы можете сделать на сайте</h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h3 class="h5 mb-3">Каталог формочек</h3>
+                    <p class="mb-3">
+                        Смотрите готовые формочки: описание, цена и фото.
+                        Подходит, если нужно выбрать быстро.
+                    </p>
+
+                    <a asp-page="/Catalog/Index"
+                       class="feature-card-link">
+                        Открыть каталог →
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h3 class="h5 mb-3">Кастомный заказ</h3>
+                    <p class="mb-3">
+                        Заполните заявку, прикрепите примеры — мы
+                        оценим стоимость и согласуем детали.
+                    </p>
+
+                    <a asp-page="/CustomRequests/Create"
+                       class="feature-card-link">
+                        Сделать кастом →
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="feature-card h-100">
+                    <h3 class="h5 mb-3">Личный кабинет</h3>
+                    <p class="mb-3">
+                        Отслеживайте статусы заказов и кастомных заявок,
+                        храните контакты и историю покупок.
+                    </p>
+
+                    <a asp-page="/Account/Index"
+                       class="feature-card-link">
+                        Перейти в ЛК →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- НАША УНИКАЛЬНОСТЬ -->
+<section class="unique-section py-5">
+    <div class="container">
+        <h2 class="unique-title text-center mb-4">
+            Наша уникальность
+        </h2>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="unique-card h-100">
+                    <h3 class="h5 mb-3">3D-визуализация</h3>
+                    <p class="mb-0">
+                        Клиент видит и утверждает цифровой двойник формы и будущих
+                        отливок до производства — исключаем недопонимание.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="unique-card h-100">
+                    <h3 class="h5 mb-3">Партнёрство</h3>
+                    <p class="mb-0">
+                        Мы не просто продаём — выступаем техническими консультантами,
+                        адаптируя идею для идеального результата.
+                    </p>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="unique-card h-100">
+                    <h3 class="h5 mb-3">Сложные проекты</h3>
+                    <p class="mb-0">
+                        Специализируемся на том, что невозможно купить: портреты,
+                        логотипы, авторские фигуры и нестандартные геометрии.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+

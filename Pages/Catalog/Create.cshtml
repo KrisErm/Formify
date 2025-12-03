@@ -1,0 +1,46 @@
+﻿@page
+@model Formify.Pages.Catalog.CreateModel
+
+@{
+    ViewData["Title"] = "Добавить продукт";
+}
+
+<div class="container py-4" style="max-width: 720px;">
+    <h1 class="mb-4">Добавить продукт</h1>
+
+    <form method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label asp-for="Input.Name" class="form-label">Название</label>
+            <input asp-for="Input.Name" class="form-control" />
+            <span asp-validation-for="Input.Name" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Description" class="form-label">Описание и параметры</label>
+            <textarea asp-for="Input.Description" rows="4" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Input.Price" class="form-label">Цена</label>
+            <input asp-for="Input.Price" class="form-control" />
+            <span asp-validation-for="Input.Price" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Изображение товара</label>
+            <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="Input.IsActive" class="form-check-input" />
+            <label asp-for="Input.IsActive" class="form-check-label">Показывать в каталоге</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <a asp-page="Manage" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

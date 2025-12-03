@@ -1,0 +1,260 @@
+﻿@page
+@model Formify.Pages.Account.IndexModel
+
+@{
+    ViewData["Title"] = "Личный кабинет";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Личный кабинет</h1>
+
+    <!-- Блок с данными клиента -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-6">
+            <div class="about-card h-100">
+                <h5>Мои данные</h5>
+                <p class="mb-1"><strong>Имя:</strong> @Model.UserInfo.Name</p>
+                <p class="mb-1"><strong>Email:</strong> @Model.UserInfo.Email</p>
+                <p class="mb-0"><strong>Телефон:</strong> @Model.UserInfo.Phone</p>
+            </div>
+        </div>
+
+        @if (Model.IsAdmin)
+        {
+            <div class="col-md-6">
+                <div class="about-card h-100">
+                    <h5>Режим администратора</h5>
+                    <p>Вы можете управлять каталогом формочек и просматривать все заказы и заявки.</p>
+                    <a asp-page="/Catalog/Manage" class="btn btn-primary btn-sm mt-2">
+                        Управление каталогом
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- История заказов -->
+    @if (Model.IsAdmin)
+    {
+        <h3 class="mb-3">Все заказы</h3>
+    }
+    else
+    {
+        <h3 class="mb-3">Мои заказы</h3>
+    }
+
+    @if (!Model.Orders.Any())
+    {
+        <p class="text-muted">Заказов не найдено.</p>
+    }
+    else
+    {
+        <div class="table-responsive mb-4">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>Пользователь</th>
+                            <th>Email</th>
+                        }
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Доставка</th>
+                        <th>Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in Model.Orders)
+                    {
+                        <tr>
+                            <td>@o.Id</td>
+                            @if (Model.IsAdmin)
+                            {
+                                <td>@o.UserName</td>
+                                <td>@o.UserEmail</td>
+                            }
+                            <td>@o.CreateDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (Model.IsAdmin)
+                                {
+                                    <select class="form-select form-select-sm order-status-select"
+                                            data-order-id="@o.Id"
+                                            onchange="updateOrderStatus(this, @o.Id)">
+                                        @foreach (var status in Model.OrderStatuses)
+                                        {
+                                            <option value="@status.Id" selected="@(o.StatusId == status.Id)">@status.Name</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    @o.Status
+                                }
+                            </td>
+                            <td>@o.DeliveryMethod</td>
+                            <td>@(o.TotalAmount?.ToString("0.00") ?? "-") ₽</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <!-- История кастомных заявок -->
+    @if (Model.IsAdmin)
+    {
+        <h3 class="mb-3">Все кастомные заявки</h3>
+    }
+    else
+    {
+        <h3 class="mb-3">Мои кастомные заявки</h3>
+    }
+
+    @if (!Model.CustomRequests.Any())
+    {
+        <p class="text-muted">Кастомных заявок не найдено.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>№</th>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>Пользователь</th>
+                            <th>Email</th>
+                        }
+                        <th>Дата</th>
+                        <th>Статус</th>
+                        <th>Оценка стоимости</th>
+                        @if (Model.IsAdmin)
+                        {
+                            <th>Действия</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.CustomRequests)
+                    {
+                        <tr>
+                            <td>@r.Id</td>
+                            @if (Model.IsAdmin)
+                            {
+                                <td>@r.UserName</td>
+                                <td>@r.UserEmail</td>
+                            }
+                            <td>@r.CreateDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (Model.IsAdmin)
+                                {
+                                    <select class="form-select form-select-sm request-status-select"
+                                            data-request-id="@r.Id"
+                                            onchange="updateRequestStatus(this, @r.Id)">
+                                        @foreach (var status in Model.RequestStatuses)
+                                        {
+                                            <option value="@status.Id" selected="@(r.StatusId == status.Id)">@status.Name</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    @r.Status
+                                }
+                            </td>
+                            <td>@(r.FinalPrice?.ToString("0.00") ?? "—") ₽</td>
+                            @if (Model.IsAdmin)
+                            {
+                                <td>
+                                    <a asp-page="/CustomRequest/Details" asp-route-id="@r.Id"
+                                       class="btn btn-outline-primary btn-sm">
+                                        Подробнее
+                                    </a>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@if (Model.IsAdmin)
+{
+    <script>
+        // Функция для обновления статуса заказа
+        async function updateOrderStatus(selectElement, orderId) {
+            const statusId = selectElement.value;
+
+            try {
+                const response = await fetch(`?handler=UpdateOrderStatus&orderId=${orderId}&statusId=${statusId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification('Статус заказа успешно обновлен', 'success');
+
+                    // Можно обновить текст статуса рядом, если нужно
+                    // selectElement.parentElement.textContent = result.newStatus;
+                } else {
+                    showNotification('Ошибка при обновлении статуса', 'error');
+                    // Возвращаем предыдущее значение
+                    // selectElement.value = selectElement.dataset.previousValue;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        // Функция для обновления статуса кастомной заявки
+        async function updateRequestStatus(selectElement, requestId) {
+            const statusId = selectElement.value;
+
+            try {
+                const response = await fetch(`?handler=UpdateRequestStatus&requestId=${requestId}&statusId=${statusId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showNotification('Статус заявки успешно обновлен', 'success');
+                } else {
+                    showNotification('Ошибка при обновлении статуса', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка соединения', 'error');
+            }
+        }
+
+        // Простая функция для отображения уведомлений
+        function showNotification(message, type) {
+            // Создаем элемент уведомления
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '1050';
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            // Автоматическое скрытие через 3 секунды
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
+}
