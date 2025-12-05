@@ -1,4 +1,4 @@
-using System;
+п»їusing System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +26,22 @@ namespace Formify.Pages.CustomRequests
             public string StatusName { get; set; } = "";
             public decimal? FinalPrice { get; set; }
             public DateTime CreateDate { get; set; }
+            public List<ItemVm> Items { get; set; } = new();
+            public List<ImageVm> Images { get; set; } = new();
+            public string? CommentUser { get; set; }
+        }
+
+        public class ItemVm
+        {
+            public string TypeName { get; set; } = "";
+            public int Quantity { get; set; }
+            public string? Note { get; set; }
+        }
+
+        public class ImageVm
+        {
+            public string Src { get; set; } = "";
+            public bool IsMain { get; set; }
         }
 
         public List<RequestRow> Requests { get; set; } = new();
@@ -35,23 +51,38 @@ namespace Formify.Pages.CustomRequests
         {
             try
             {
-                Requests = await _context.CustomRequests
+                var requests = await _context.CustomRequests
                     .Include(r => r.User)
                     .Include(r => r.Status)
+                    .Include(r => r.Items)
+                    .Include(r => r.Images)
                     .OrderByDescending(r => r.CreateDate)
-                    .Select(r => new RequestRow
-                    {
-                        Id = r.Id,
-                        UserName = r.User != null ? r.User.Name : "Клиент удален",
-                        StatusName = r.Status!.Name,
-                        FinalPrice = r.FinalPrice,
-                        CreateDate = r.CreateDate
-                    })
                     .ToListAsync();
+
+                Requests = requests.Select(r => new RequestRow
+                {
+                    Id = r.Id,
+                    UserName = r.User?.Name ?? "РќРµРёР·РІРµСЃС‚РЅРѕ",
+                    StatusName = r.Status?.Name ?? "Р‘РµР· СЃС‚Р°С‚СѓСЃР°",
+                    FinalPrice = r.FinalPrice,
+                    CreateDate = r.CreateDate,
+                    Items = r.Items.Select(i => new ItemVm
+                    {
+                        TypeName = i.TypeName,
+                        Quantity = i.Quantity,
+                        Note = i.Note
+                    }).ToList(),
+                    Images = r.Images.Select(img => new ImageVm
+                    {
+                        Src = $"data:{img.ImageContentType};base64,{Convert.ToBase64String(img.ImageData)}",
+                        IsMain = img.IsMain
+                    }).ToList(),
+                    CommentUser = r.CommentUser
+                }).ToList();
             }
             catch (Exception ex)
             {
-                ErrorMessage = "Не удалось загрузить заявки.";
+                ErrorMessage = "РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ Р·Р°СЏРІРєРё: " + ex.Message;
                 Console.WriteLine(ex);
             }
         }

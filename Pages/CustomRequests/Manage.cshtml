@@ -3,6 +3,22 @@
 
 @{
     ViewData["Title"] = "Кастомные заявки";
+
+    string GetStatusBadgeClass(string statusName)
+    {
+        return statusName switch
+        {
+            "Новая" => "bg-warning",
+            "Принят" => "bg-info",
+            "В разработке" => "bg-info",
+            "Собран" => "bg-info",
+            "Отправлен" => "bg-info",
+            "В пути" => "bg-warning", // Желтый
+            "Доставлен" => "bg-warning", // Жёлтый
+            "Завершен" => "bg-success", // Зеленый
+            _ => "bg-secondary"
+        };
+    }
 }
 
 <div class="container py-4">
@@ -26,22 +42,65 @@
                         <th>№</th>
                         <th>Клиент</th>
                         <th>Статус</th>
+                        <th>Тип формочки</th>
+                        <th>Кол-во</th>
                         <th>Цена</th>
                         <th>Дата</th>
+                        <th>Изображение</th>
                         <th></th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var r in Model.Requests)
+                    @foreach (var request in Model.Requests)
                     {
                         <tr>
-                            <td>@r.Id</td>
-                            <td>@r.UserName</td>
-                            <td>@r.StatusName</td>
-                            <td>@(r.FinalPrice?.ToString("0.00") ?? "—") ₽</td>
-                            <td>@r.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                            <td>@request.Id</td>
+                            <td>@request.UserName</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(request.StatusName)">
+                                    @request.StatusName
+                                </span>
+                            </td>
+                            <td>
+                                @if (request.Items.Any())
+                                {
+                                    <div class="small">@request.Items.First().TypeName</div>
+                                    @if (request.Items.Count > 1)
+                                    {
+                                        <div class="text-muted small">+ ещё @(request.Items.Count - 1)</div>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (request.Items.Any())
+                                {
+                                    @request.Items.First().Quantity
+                                }
+                            </td>
+                            <td>
+                                @if (request.FinalPrice.HasValue)
+                                {
+                                    <span class="fw-bold">@request.FinalPrice?.ToString("0.00") ₽</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td>@request.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @if (request.Images.Any())
+                                {
+                                    <span class="badge bg-info">@request.Images.Count</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
                             <td class="text-end">
-                                <a asp-page="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary">
+                                <a asp-page="Edit" asp-route-id="@request.Id"
+                                   class="btn btn-sm btn-primary">
                                     Открыть
                                 </a>
                             </td>

@@ -53,55 +53,83 @@ namespace Formify.Pages.CustomRequests
 
         public async Task<IActionResult> OnPostAsync()
         {
-            Console.WriteLine("=== OnPostAsync вызван ===");
-            Console.WriteLine($"ModelState.IsValid: {ModelState.IsValid}");
-            Console.WriteLine($"User.Identity.IsAuthenticated: {User.Identity?.IsAuthenticated}");
-
             if (!ModelState.IsValid)
-            {
-                var errors = string.Join(", ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
-                ErrorMessage = $"Ошибки формы: {errors}";
-                Console.WriteLine($"ModelState ошибки: {errors}");
                 return Page();
-            }
 
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Console.WriteLine($"userIdStr: '{userIdStr}'");
             if (!long.TryParse(userIdStr, out var userId))
             {
-                ErrorMessage = "Ошибка авторизации. Перезайдите в аккаунт.";
-                return Page();
+                return RedirectToPage("/Account/Login");
             }
+            var statusNew = await _context.RequestStatuses
+                .FirstOrDefaultAsync(s => s.Code == "new");
 
-            var statusNew = await _context.RequestStatuses.FirstOrDefaultAsync(s => s.Code == "new");
-            Console.WriteLine($"statusNew найден: {statusNew != null}");
             if (statusNew == null)
             {
-                ErrorMessage = "У нас нет статуса 'new'. Обратитесь к администратору.";
-                return Page();
-            }
-
-            try
-            {
-                var request = new CustomRequest { /* ... ваш код ... */ };
-                _context.CustomRequests.Add(request);
+                // Создаем статус, если его нет
+                statusNew = new RequestStatus
+                {
+                    Code = "new",
+                    Name = "Новая",
+                };
+                _context.RequestStatuses.Add(statusNew);
                 await _context.SaveChangesAsync();
-                Console.WriteLine($"Заявка создана: ID={request.Id}");
-
-                // item и images тоже остаются
-                await _context.SaveChangesAsync();
-                SuccessMessage = "✅ Заявка отправлена! После обработки администратор выставит цену и статус.";
             }
-            catch (Exception ex)
+
+            var request = new CustomRequest
             {
-                ErrorMessage = $"Ошибка БД: {ex.Message}";
-                Console.WriteLine($"EXCEPTION: {ex}");
+                UserId = userId,
+                StatusId = statusNew.Id,
+                CommentUser = Input.Comment,
+                CreateDate = DateTime.UtcNow,
+                UpdateDate = DateTime.UtcNow
+            };
+
+            _context.CustomRequests.Add(request);
+            await _context.SaveChangesAsync();
+
+            var item = new CustomRequestItem
+            {
+                RequestId = request.Id,
+                TypeName = Input.TypeName,
+                Quantity = Input.Quantity,
+                Note = Input.Note
+            };
+            _context.CustomRequestItems.Add(item);
+
+            if (Images != null && Images.Any())
+            {
+                bool first = true;
+                foreach (var file in Images)
+                {
+                    if (file.Length <= 0) continue;
+
+                    using var ms = new MemoryStream();
+                    await file.CopyToAsync(ms);
+
+                    var img = new CustomRequestImage
+                    {
+                        RequestId = request.Id,
+                        ImageData = ms.ToArray(),
+                        ImageName = file.FileName,
+                        ImageContentType = file.ContentType,
+                        IsMain = first,
+                        CreateDate = DateTime.UtcNow
+                    };
+                    first = false;
+
+                    _context.CustomRequestImages.Add(img);
+                }
             }
 
+            await _context.SaveChangesAsync();
+
+            SuccessMessage = "Заявка отправлена. После обработки администратор выставит цену и статус.";
+            // очистим форму
             Input = new InputModel();
             Images = null;
+
             return Page();
         }
-
     }
 }

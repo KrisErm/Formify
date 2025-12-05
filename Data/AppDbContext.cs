@@ -36,17 +36,25 @@ namespace Formify.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<RequestStatus>().ToTable("RequestStatuses");
+            modelBuilder.Entity<Product>()
+                .Property(p => p.Price)
+                .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<Product>().Property(p => p.Price).HasColumnType("numeric(10,2)");
+            modelBuilder.Entity<Order>()
+                .Property(o => o.TotalAmount)
+                .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<Order>().Property(o => o.TotalAmount).HasColumnType("numeric(10,2)");
+            modelBuilder.Entity<Order>()
+                .Property(o => o.DeliveryPrice)
+                .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<Order>().Property(o => o.DeliveryPrice).HasColumnType("numeric(10,2)");
+            modelBuilder.Entity<CustomRequest>()
+                .Property(r => r.FinalPrice)
+                .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<CustomRequest>().Property(r => r.FinalPrice).HasColumnType("numeric(10,2)");
-
-            modelBuilder.Entity<DeliveryMethod>().Property(d => d.BasePrice).HasColumnType("numeric(10,2)");
+            modelBuilder.Entity<DeliveryMethod>()
+                .Property(d => d.BasePrice)
+                .HasColumnType("numeric(10,2)");
         }
     }
 }
