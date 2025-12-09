@@ -13,9 +13,9 @@
             "В разработке" => "bg-info",
             "Собран" => "bg-info",
             "Отправлен" => "bg-info",
-            "В пути" => "bg-warning", // Желтый
-            "Доставлен" => "bg-warning", // Жёлтый
-            "Завершен" => "bg-success", // Зеленый
+            "В пути" => "bg-warning",
+            "Доставлен" => "bg-warning",
+            "Завершен" => "bg-success",
             _ => "bg-secondary"
         };
     }
@@ -24,6 +24,72 @@
 <div class="container py-4">
     <h1 class="mb-3">Кастомные заявки</h1>
 
+    <!-- Форма фильтрации -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Фильтры</h5>
+            <form method="get" class="row g-3 align-items-end">
+                <!-- Фильтр по дате "с" -->
+                <div class="col-md-3">
+                    <label asp-for="StartDate" class="form-label">Дата с</label>
+                    <input type="date" asp-for="StartDate" class="form-control" />
+                </div>
+
+                <!-- Фильтр по дате "по" -->
+                <div class="col-md-3">
+                    <label asp-for="EndDate" class="form-label">Дата по</label>
+                    <input type="date" asp-for="EndDate" class="form-control" />
+                </div>
+
+                <!-- Фильтр по статусу -->
+                <div class="col-md-3">
+                    <label asp-for="StatusFilter" class="form-label">Статус</label>
+                    <select asp-for="StatusFilter" class="form-select">
+                        <option value="">Все статусы</option>
+                        @foreach (var status in Model.AvailableStatuses)
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="col-md-3">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Применить
+                        </button>
+                        <a asp-page="Manage" asp-page-handler="Reset" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Сбросить
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Информация о фильтрах -->
+            @if (Model.StartDate.HasValue || Model.EndDate.HasValue || !string.IsNullOrEmpty(Model.StatusFilter))
+            {
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Активные фильтры:
+                        @if (Model.StartDate.HasValue)
+                        {
+                            <span class="badge bg-info">С: @Model.StartDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                        @if (Model.EndDate.HasValue)
+                        {
+                            <span class="badge bg-info">По: @Model.EndDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.StatusFilter))
+                        {
+                            <span class="badge bg-info">Статус: @Model.StatusFilter</span>
+                        }
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+
     @if (!string.IsNullOrEmpty(Model.ErrorMessage))
     {
         <div class="alert alert-danger">@Model.ErrorMessage</div>
@@ -31,83 +97,128 @@
 
     @if (!Model.Requests.Any())
     {
-        <p>Заявок пока нет.</p>
-    }
+        <div class="alert alert-info">
+            <h5>Нет заявок</h5>
+            <p>
+                @(Model.StartDate.HasValue || Model.EndDate.HasValue || !string.IsNullOrEmpty(Model.StatusFilter)
+                            ? "По указанным фильтрам заявок не найдено."
+                            : "Заявок пока нет.")
+        </p>
+    </div>
+        }
     else
     {
-        <div class="table-responsive">
-            <table class="table table-sm align-middle">
-                <thead>
-                    <tr>
-                        <th>№</th>
-                        <th>Клиент</th>
-                        <th>Статус</th>
-                        <th>Тип формочки</th>
-                        <th>Кол-во</th>
-                        <th>Цена</th>
-                        <th>Дата</th>
-                        <th>Изображение</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var request in Model.Requests)
-                    {
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Всего заявок: <strong>@Model.Requests.Count</strong></span>
+                    <small class="text-muted">
+                        @if (Model.StartDate.HasValue && Model.EndDate.HasValue)
+                        {
+                            <span>Период: @Model.StartDate.Value.ToString("dd.MM.yyyy") - @Model.EndDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                    </small>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
                         <tr>
-                            <td>@request.Id</td>
-                            <td>@request.UserName</td>
-                            <td>
-                                <span class="badge @GetStatusBadgeClass(request.StatusName)">
-                                    @request.StatusName
-                                </span>
-                            </td>
-                            <td>
-                                @if (request.Items.Any())
-                                {
-                                    <div class="small">@request.Items.First().TypeName</div>
-                                    @if (request.Items.Count > 1)
-                                    {
-                                        <div class="text-muted small">+ ещё @(request.Items.Count - 1)</div>
-                                    }
-                                }
-                            </td>
-                            <td>
-                                @if (request.Items.Any())
-                                {
-                                    @request.Items.First().Quantity
-                                }
-                            </td>
-                            <td>
-                                @if (request.FinalPrice.HasValue)
-                                {
-                                    <span class="fw-bold">@request.FinalPrice?.ToString("0.00") ₽</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td>@request.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</td>
-                            <td>
-                                @if (request.Images.Any())
-                                {
-                                    <span class="badge bg-info">@request.Images.Count</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td class="text-end">
-                                <a asp-page="Edit" asp-route-id="@request.Id"
-                                   class="btn btn-sm btn-primary">
-                                    Открыть
-                                </a>
-                            </td>
+                            <th>№</th>
+                            <th>Клиент</th>
+                            <th>Статус</th>
+                            <th>Тип формочки</th>
+                            <th>Кол-во</th>
+                            <th>Цена</th>
+                            <th>Дата</th>
+                            <th>Изображение</th>
+                            <th></th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var request in Model.Requests)
+                        {
+                            <tr>
+                                <td>@request.Id</td>
+                                <td>@request.UserName</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(request.StatusName)">
+                                        @request.StatusName
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (request.Items.Any())
+                                    {
+                                        <div class="small">@request.Items.First().TypeName</div>
+                                        @if (request.Items.Count > 1)
+                                        {
+                                            <div class="text-muted small">+ ещё @(request.Items.Count - 1)</div>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (request.Items.Any())
+                                    {
+                                        @request.Items.First().Quantity
+                                    }
+                                </td>
+                                <td>
+                                    @if (request.FinalPrice.HasValue)
+                                    {
+                                        <span class="fw-bold">@request.FinalPrice?.ToString("0.00") ₽</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="small">@request.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</span>
+                                    <br>
+                                    <span class="text-muted smaller">@request.CreateDate.ToLocalTime().ToString("HH:mm")</span>
+                                </td>
+                                <td>
+                                    @if (request.Images.Any())
+                                    {
+                                        <span class="badge bg-info">@request.Images.Count</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-page="Edit" asp-route-id="@request.Id"
+                                       class="btn btn-sm btn-primary">
+                                        Открыть
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        // Устанавливаем максимальную дату для поля "по" как сегодня
+        document.addEventListener('DOMContentLoaded', function() {
+            const endDateInput = document.querySelector('input[asp-for="EndDate"]');
+            const today = new Date().toISOString().split('T')[0];
+            if (endDateInput) {
+                endDateInput.max = today;
+            }
+
+            // Устанавливаем максимальную дату для поля "с" как выбранная дата "по"
+            const startDateInput = document.querySelector('input[asp-for="StartDate"]');
+            if (endDateInput && startDateInput) {
+                endDateInput.addEventListener('change', function() {
+                    startDateInput.max = this.value;
+                });
+            }
+        });
+    </script>
+}

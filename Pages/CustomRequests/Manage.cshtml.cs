@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Formify.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Formify.Data;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 
 namespace Formify.Pages.CustomRequests
 {
@@ -44,21 +45,64 @@ namespace Formify.Pages.CustomRequests
             public bool IsMain { get; set; }
         }
 
+        // Свойства для фильтрации
+        [BindProperty(SupportsGet = true)]
+        public DateTime? StartDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public DateTime? EndDate { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public string? StatusFilter { get; set; }
+
         public List<RequestRow> Requests { get; set; } = new();
         public string? ErrorMessage { get; set; }
+        public List<string> AvailableStatuses { get; set; } = new();
 
         public async Task OnGetAsync()
         {
             try
             {
-                var requests = await _context.CustomRequests
+                // Получаем все заявки
+                var query = _context.CustomRequests
                     .Include(r => r.User)
                     .Include(r => r.Status)
                     .Include(r => r.Items)
                     .Include(r => r.Images)
-                    .OrderByDescending(r => r.CreateDate)
+                    .AsQueryable();
+
+                // Применяем фильтр по дате "с"
+                if (StartDate.HasValue)
+                {
+                    query = query.Where(r => r.CreateDate.Date >= StartDate.Value.Date);
+                }
+
+                // Применяем фильтр по дате "по"
+                if (EndDate.HasValue)
+                {
+                    // Добавляем 1 день, чтобы включить весь последний день
+                    var endDateNextDay = EndDate.Value.Date.AddDays(1);
+                    query = query.Where(r => r.CreateDate < endDateNextDay);
+                }
+
+                // Применяем фильтр по статусу
+                if (!string.IsNullOrEmpty(StatusFilter))
+                {
+                    query = query.Where(r => r.Status.Name == StatusFilter);
+                }
+
+                // Сортируем по дате (новые сверху)
+                query = query.OrderByDescending(r => r.CreateDate);
+
+                var requests = await query.ToListAsync();
+
+                // Получаем список доступных статусов для фильтра
+                AvailableStatuses = await _context.RequestStatuses
+                    .Select(s => s.Name)
+                    .Distinct()
                     .ToListAsync();
 
+                // Маппим данные для отображения
                 Requests = requests.Select(r => new RequestRow
                 {
                     Id = r.Id,
@@ -85,6 +129,15 @@ namespace Formify.Pages.CustomRequests
                 ErrorMessage = "Не удалось загрузить заявки: " + ex.Message;
                 Console.WriteLine(ex);
             }
+        }
+
+        // Метод для сброса фильтров
+        public IActionResult OnGetReset()
+        {
+            StartDate = null;
+            EndDate = null;
+            StatusFilter = null;
+            return RedirectToPage();
         }
     }
 }
