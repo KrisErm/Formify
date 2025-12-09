@@ -22,19 +22,41 @@
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
                     <!-- Левое меню -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <!-- Главная - только для НЕ админов -->
+                        @if (!User.IsInRole("admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(Context.Request.Path == "/" ? "active" : "")" asp-page="/Index">Главная</a>
+                            </li>
+                        }
+
                         <li class="nav-item">
-                            <a class="nav-link" asp-page="/Index">Главная</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-page="/Catalog/Index">Каталог</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-page="/CustomRequests/Create">Кастомный заказ</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-page="/About">О нас</a>
+                            <a class="nav-link @(Context.Request.Path.ToString().Contains("/Catalog") ? "active" : "")" asp-page="/Catalog/Index">Каталог</a>
                         </li>
 
+                        <!-- Кастомный заказ - только для НЕ админов -->
+                        @if (!User.IsInRole("admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/CustomRequests/Create") ? "active" : "")" asp-page="/CustomRequests/Create">Кастомный заказ</a>
+                            </li>
+                        }
+
+                        <!-- О нас - только для НЕ админов -->
+                        @if (!User.IsInRole("admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/About") ? "active" : "")" asp-page="/About">О нас</a>
+                            </li>
+                        }
+
+                        <!-- Управление заявками - только для админов -->
+                        @if (User.IsInRole("admin"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/CustomRequests/Manage") ? "active" : "")" asp-page="/CustomRequests/Manage">Управление заявками</a>
+                            </li>
+                        }
                     </ul>
 
                     <!-- Правая часть: корзина + ЛК/Вход -->
@@ -44,8 +66,12 @@
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
-                                <a class="nav-link" asp-page="/Account/Index">
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/Account/Index") ? "active" : "")" asp-page="/Account/Index">
                                     @User.Identity.Name
+                                    @if (User.IsInRole("admin"))
+                                    {
+                                        <span class="badge bg-danger ms-1">Admin</span>
+                                    }
                                 </a>
                             </li>
                             <li class="nav-item">
@@ -63,8 +89,6 @@
                             </li>
                         }
                     </ul>
-
-
                 </div>
             </div>
         </nav>

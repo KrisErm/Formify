@@ -59,9 +59,15 @@
         </div>
 
         <h4>Итого: @Model.Total.ToString("0.00") ₽</h4>
+        <div class="text-center mt-5 pt-4 border-top">
+            <h3 class="text-success mb-4">Итого: <strong>@Model.Total.ToString("0.00") ₽</strong></h3>
+            <a href="/Checkout?total=@Model.Total" target="_blank"
+               class="btn btn-success btn-lg px-5 py-3 mb-3 d-inline-block"
+               style="font-size:20px;font-weight:bold;box-shadow:0 8px 25px rgba(40,167,69,0.4);border-radius:10px;">
+                🛒 Оформить заказ
+            </a>
+            <p class="text-muted small">* Откроется окно оплаты</p>
+        </div>
 
-        <p class="text-muted mt-2">
-            Оформление заказа и оплата будут добавлены позже.
-        </p>
     }
 </div>

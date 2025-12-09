@@ -43,18 +43,11 @@ namespace Formify.Pages.Account
             public string Status { get; set; } = "";
             public decimal? FinalPrice { get; set; }
             public DateTime CreateDate { get; set; }
-            public string? CommentAdmin { get; set; }
-            // Добавляем поля для администратора
-            public string? UserName { get; set; }
-            public bool IsAdminView { get; set; }
         }
 
         public UserInfoVm UserInfo { get; set; } = new();
         public List<OrderVm> Orders { get; set; } = new();
         public List<CustomRequestVm> CustomRequests { get; set; } = new();
-        // Добавляем список всех заявок для администратора
-        public List<CustomRequestVm> AllCustomRequests { get; set; } = new();
-        public bool IsAdmin { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -74,9 +67,6 @@ namespace Formify.Pages.Account
                 Phone = user.Phone
             };
 
-            // Проверяем, является ли пользователь администратором
-            IsAdmin = User.IsInRole("admin");
-
             // заказы
             Orders = await _context.Orders
                 .Include(o => o.Status)
@@ -93,7 +83,7 @@ namespace Formify.Pages.Account
                 })
                 .ToListAsync();
 
-            // кастомные заявки для текущего пользователя
+            // кастомные заявки
             CustomRequests = await _context.CustomRequests
                 .Include(r => r.Status)
                 .Where(r => r.UserId == userId)
@@ -103,29 +93,9 @@ namespace Formify.Pages.Account
                     Id = r.Id,
                     Status = r.Status != null ? r.Status.Name : "",
                     FinalPrice = r.FinalPrice,
-                    CreateDate = r.CreateDate,
-                    CommentAdmin = r.CommentAdmin
+                    CreateDate = r.CreateDate
                 })
                 .ToListAsync();
-
-            // Если пользователь - администратор, загружаем ВСЕ кастомные заявки
-            if (IsAdmin)
-            {
-                AllCustomRequests = await _context.CustomRequests
-                    .Include(r => r.Status)
-                    .Include(r => r.User) // Включаем информацию о пользователе
-                    .OrderByDescending(r => r.CreateDate)
-                    .Select(r => new CustomRequestVm
-                    {
-                        Id = r.Id,
-                        Status = r.Status != null ? r.Status.Name : "",
-                        FinalPrice = r.FinalPrice,
-                        CreateDate = r.CreateDate,
-                        UserName = r.User != null ? r.User.Name : "Неизвестно",
-                        IsAdminView = true
-                    })
-                    .ToListAsync();
-            }
 
             return Page();
         }

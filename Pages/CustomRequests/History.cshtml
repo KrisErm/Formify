@@ -1,0 +1,131 @@
+﻿@page
+@model Formify.Pages.CustomRequests.HistoryModel
+
+@{
+    ViewData["Title"] = "История кастомных заказов";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">История кастомных заказов</h1>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    @if (!Model.Requests.Any())
+    {
+        <div class="text-center py-5">
+            <div class="alert alert-info">
+                <h5>У вас пока нет кастомных заказов</h5>
+                <p>Создайте свою первую кастомную формочку!</p>
+                <a asp-page="Create" class="btn btn-primary">Создать заказ</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>№</th>
+                        <th>Тип формочки</th>
+                        <th>Кол-во</th>
+                        <th>Статус</th>
+                        <th>Цена</th>
+                        <th>Дата</th>
+                        <th>Комментарий админа</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var request in Model.Requests)
+                    {
+                        <tr>
+                            <td>@request.Id</td>
+                            <td>
+                                <div class="fw-semibold">@request.TypeName</div>
+                                @if (!string.IsNullOrEmpty(request.Note))
+                                {
+                                    <div class="text-muted small">@request.Note</div>
+                                }
+                            </td>
+                            <td>@request.Quantity</td>
+                            <td>
+                                <span class="badge @GetStatusBadgeClass(request.StatusName)">
+                                    @request.StatusName
+                                </span>
+                            </td>
+                            <td>
+                                @if (request.FinalPrice.HasValue)
+                                {
+                                    <span class="fw-bold">@request.FinalPrice?.ToString("0.00") ₽</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">ожидается</span>
+                                }
+                            </td>
+                            <td>@request.CreateDate.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>@request.CommentAdmin</td>
+                            <td>
+                                @if (request.HasImages)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-info"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#imageModal-@request.Id">
+                                        Фото
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+
+                        <!-- Модальное окно для изображений -->
+                        @if (request.HasImages)
+                        {
+                            <div class="modal fade" id="imageModal-@request.Id" tabindex="-1">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Изображения заказа #@request.Id</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="row">
+                                                @foreach (var image in request.Images)
+                                                {
+                                                    <div class="col-md-6 mb-3">
+                                                        <img src="@image.Src" class="img-fluid rounded" alt="Изображение заказа" />
+                                                    </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@functions {
+    string GetStatusBadgeClass(string statusName)
+    {
+        return statusName switch
+        {
+            "Новая" => "bg-secondary",
+            "Принят" => "bg-primary",
+            "В разработке" => "bg-info",
+            "Собран" => "bg-info",
+            "Отправлен" => "bg-warning",
+            "В пути" => "bg-warning",
+            "Доставлен" => "bg-success",
+            "Завершен" => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+}

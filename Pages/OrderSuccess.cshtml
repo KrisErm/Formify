@@ -1,0 +1,14 @@
+﻿@page
+@model Formify.Pages.OrderSuccessModel
+@{
+    ViewData["Title"] = "Заказ оплачен";
+}
+
+<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:10000;">
+    <div style="background:linear-gradient(135deg,#d4edda,#c8e6c9);padding:40px;border-radius:15px;width:90%;max-width:500px;text-align:center;box-shadow:0 15px 40px rgba(0,0,0,0.3);border:3px solid #28a745;">
+        <div style="font-size:60px;margin-bottom:20px;color:#28a745;">✅</div>
+        <h1 style="color:#155724;margin-bottom:15px;font-size:28px;">Оплата прошла успешно!</h1>
+        <p style="font-size:18px;color:#2e7d32;margin-bottom:30px;">Заказ сохранен в личном кабинете</p>
+        <button onclick="window.close()" style="padding:15px 40px;background:#28a745;color:white;border:none;border-radius:8px;font-size:18px;font-weight:bold;cursor:pointer;">Закрыть</button>
+    </div>
+</div>

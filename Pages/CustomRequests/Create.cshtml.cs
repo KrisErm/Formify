@@ -47,12 +47,25 @@ namespace Formify.Pages.CustomRequests
         public string? SuccessMessage { get; set; }
         public string? ErrorMessage { get; set; }
 
-        public void OnGet()
+        public IActionResult OnGet()
         {
+            // Проверяем, если пользователь админ - перенаправляем в ЛК
+            if (User.IsInRole("admin"))
+            {
+                return RedirectToPage("/Account/Index");
+            }
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // Проверяем, если пользователь админ - не даем создавать заявки
+            if (User.IsInRole("admin"))
+            {
+                ErrorMessage = "Администраторы не могут создавать кастомные заявки.";
+                return Page();
+            }
+
             if (!ModelState.IsValid)
                 return Page();
 
