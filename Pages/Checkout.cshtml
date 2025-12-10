@@ -12,20 +12,14 @@
             <strong>Итого к оплате: <span style="color:#1976d2;font-size:20px;">@Model.TotalDisplay ₽</span></strong>
         </div>
 
-        @if (!string.IsNullOrEmpty(Model.DebugInfo))
-        {
-            <div style="background:#fff3cd;color:#856404;padding:12px;border-radius:5px;margin:15px 0;font-family:monospace;font-size:13px;border-left:4px solid #ffc107;">
-                🔍 @Model.DebugInfo
-            </div>
-        }
-
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
         {
             <div style="background:#f8d7da;color:#721c24;padding:12px;border-radius:5px;margin:15px 0;border:1px solid #f5c6cb;">
                 ❌ @Model.ErrorMessage
             </div>
         }
-        else if (!string.IsNullOrEmpty(Model.SuccessMessage))
+
+        @if (!string.IsNullOrEmpty(Model.SuccessMessage))
         {
             <div style="background:#d4edda;color:#155724;padding:20px;border-radius:8px;margin:15px 0;border:1px solid #c3e6cb;text-align:center;">
                 <div style="font-size:28px;margin-bottom:15px;">✅</div>
@@ -45,6 +39,19 @@
                 <div style="margin-bottom:15px;">
                     <label style="display:block;margin-bottom:5px;font-weight:bold;">Телефон *</label>
                     <input name="Phone" value="@Model.Phone" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:16px;" placeholder="+7 (999) 123-45-67" required />
+                </div>
+
+                <div style="margin-bottom:15px;">
+                    <label style="display:block;margin-bottom:5px;font-weight:bold;">Способ доставки *</label>
+                    <select name="DeliveryMethodId" style="width:100%;padding:12px;border:1px solid #ddd;border-radius:5px;box-sizing:border-box;font-size:16px;" required>
+                        <option value="">Выберите способ доставки</option>
+                        @foreach (var method in Model.DeliveryMethods)
+                        {
+                            <option value="@method.Value" selected="@(method.Value == Model.SelectedDeliveryMethodId.ToString() ? "selected" : null)">
+                                @method.Text
+                            </option>
+                        }
+                    </select>
                 </div>
 
                 <div style="margin-bottom:20px;">
