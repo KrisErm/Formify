@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.RazorPages;
 using Formify.Data;
-using Formify.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
@@ -39,11 +38,10 @@ namespace Formify.Pages
                 var status = _context.OrderStatuses.FirstOrDefault(s => s.Code == "new");
                 var delivery = _context.DeliveryMethods.FirstOrDefault(d => d.Code == "courier");
 
-                DebugInfo = $"StatusId={status?.Id}({status?.Name}), DeliveryId={delivery?.Id}({delivery?.Name})";
+                var nowUtc = DateTime.UtcNow;
 
-                var nowUtc = DateTime.UtcNow;  // ← UTC для PostgreSQL!
-
-                var order = new Order
+                // Используем полное имя класса
+                var order = new Formify.Models.Order
                 {
                     UserId = GetUserId(),
                     StatusId = status?.Id ?? 1,
@@ -52,10 +50,10 @@ namespace Formify.Pages
                     DeliveryPrice = 0m,
                     DeliveryFullName = FullName,
                     DeliveryPhone = Phone,
-                    DeliveryCity = "Москва",  // ← обязательное поле
+                    DeliveryCity = "Москва",
                     DeliveryAddress = Address,
-                    CreateDate = nowUtc,      // ← UTC!
-                    UpdateDate = nowUtc       // ← UTC!
+                    CreateDate = nowUtc,
+                    UpdateDate = nowUtc
                 };
 
                 _context.Orders.Add(order);

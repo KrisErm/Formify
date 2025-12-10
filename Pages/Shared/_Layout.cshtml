@@ -4,9 +4,7 @@
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Formify</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Bootstrap Icons для фильтров и кнопок -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
@@ -15,12 +13,10 @@
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
                 <a class="navbar-brand fw-bold" asp-page="/Index">Formify</a>
-
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
                         aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="mainNavbar">
                     <!-- Левое меню -->
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -52,11 +48,16 @@
                             </li>
                         }
 
-                        <!-- Управление заявками - только для админов -->
+                        <!-- Управление заявками и заказами - только для админов -->
                         @if (User.IsInRole("admin"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/CustomRequests/Manage") ? "active" : "")" asp-page="/CustomRequests/Manage">Управление заявками</a>
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/CustomRequests/Manage") ? "active" : "")"
+                                   asp-page="/CustomRequests/Manage">Управление заявками</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(Context.Request.Path.ToString().Contains("/Order") ? "active" : "")"
+                                   asp-page="/Order/Index">Управление заказами</a>
                             </li>
                         }
                     </ul>
@@ -98,7 +99,7 @@
 
     <div class="container-fluid p-0">
         <main role="main">
-            @RenderBody()
+            @RenderBody() <!-- ВАЖНО: эта строка должна быть! -->
         </main>
     </div>
 

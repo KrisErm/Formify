@@ -23,8 +23,8 @@ namespace Formify.Data
         public DbSet<CustomRequestItem> CustomRequestItems => Set<CustomRequestItem>();
         public DbSet<CustomRequestImage> CustomRequestImages => Set<CustomRequestImage>();
 
-        // Заказы (на будущее)
-        public DbSet<Order> Orders => Set<Order>();
+        // Заказы (используем полное имя, чтобы избежать конфликта)
+        public DbSet<Formify.Models.Order> Orders => Set<Formify.Models.Order>();
         public DbSet<OrderStatus> OrderStatuses => Set<OrderStatus>();
         public DbSet<DeliveryMethod> DeliveryMethods => Set<DeliveryMethod>();
 
@@ -40,11 +40,11 @@ namespace Formify.Data
                 .Property(p => p.Price)
                 .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<Order>()
+            modelBuilder.Entity<Formify.Models.Order>()
                 .Property(o => o.TotalAmount)
                 .HasColumnType("numeric(10,2)");
 
-            modelBuilder.Entity<Order>()
+            modelBuilder.Entity<Formify.Models.Order>()
                 .Property(o => o.DeliveryPrice)
                 .HasColumnType("numeric(10,2)");
 

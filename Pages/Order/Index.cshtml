@@ -1,0 +1,252 @@
+﻿@page
+@model Formify.Pages.Order.IndexModel
+
+@{
+    ViewData["Title"] = "Управление заказами";
+
+    string GetStatusBadgeClass(string statusName)
+    {
+        return statusName switch
+        {
+            "Новый" or "В обработке" => "bg-warning",
+            "Оплачен" or "Собран" => "bg-info",
+            "Отправлен" => "bg-primary",
+            "В пути" => "bg-warning",
+            "Доставлен" => "bg-success",
+            "Отменен" => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+}
+
+<div class="container py-4">
+    <h1 class="mb-3">Управление заказами</h1>
+    <p class="text-muted mb-4">Отображаются только обычные заказы (не кастомные)</p>
+
+    <!-- Форма фильтрации -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">Фильтры</h5>
+            <form method="get" class="row g-3 align-items-end">
+                <!-- Фильтр по дате "с" -->
+                <div class="col-md-3">
+                    <label asp-for="StartDate" class="form-label">Дата с</label>
+                    <input type="date" asp-for="StartDate" class="form-control" />
+                </div>
+
+                <!-- Фильтр по дате "по" -->
+                <div class="col-md-3">
+                    <label asp-for="EndDate" class="form-label">Дата по</label>
+                    <input type="date" asp-for="EndDate" class="form-control" />
+                </div>
+
+                <!-- Фильтр по статусу -->
+                <div class="col-md-3">
+                    <label asp-for="StatusFilter" class="form-label">Статус заказа</label>
+                    <select asp-for="StatusFilter" class="form-select">
+                        <option value="">Все статусы</option>
+                        @foreach (var status in Model.AvailableStatuses)
+                        {
+                            <option value="@status.Id">@status.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Фильтр по способу доставки -->
+                <div class="col-md-3">
+                    <label asp-for="DeliveryMethodFilter" class="form-label">Способ доставки</label>
+                    <select asp-for="DeliveryMethodFilter" class="form-select">
+                        <option value="">Все способы</option>
+                        @foreach (var method in Model.AvailableDeliveryMethods)
+                        {
+                            <option value="@method.Id">@method.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="col-md-6 mt-3">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-funnel"></i> Применить
+                        </button>
+                        <a asp-page="Index" asp-page-handler="Reset" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Сбросить
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Информация о фильтрах -->
+            @if (Model.StartDate.HasValue || Model.EndDate.HasValue || Model.StatusFilter.HasValue || Model.DeliveryMethodFilter.HasValue)
+            {
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Активные фильтры:
+                        @if (Model.StartDate.HasValue)
+                        {
+                            <span class="badge bg-info me-1">С: @Model.StartDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                        @if (Model.EndDate.HasValue)
+                        {
+                            <span class="badge bg-info me-1">По: @Model.EndDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                        @if (Model.StatusFilter.HasValue)
+                        {
+                            var statusName = Model.AvailableStatuses.FirstOrDefault(s => s.Id == Model.StatusFilter.Value)?.Name;
+                            <span class="badge bg-info me-1">Статус: @statusName</span>
+                        }
+                        @if (Model.DeliveryMethodFilter.HasValue)
+                        {
+                            var methodName = Model.AvailableDeliveryMethods.FirstOrDefault(d => d.Id == Model.DeliveryMethodFilter.Value)?.Name;
+                            <span class="badge bg-info me-1">Доставка: @methodName</span>
+                        }
+                    </small>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-danger">@Model.ErrorMessage</div>
+    }
+
+    @if (!Model.Orders.Any())
+    {
+        <div class="alert alert-info">
+            <h5>Нет заказов</h5>
+            <p>
+                @(Model.StartDate.HasValue || Model.EndDate.HasValue || Model.StatusFilter.HasValue || Model.DeliveryMethodFilter.HasValue
+                            ? "По указанным фильтрам заказов не найдено."
+                            : "Обычных заказов пока нет.")
+        </p>
+    </div>
+        }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Всего заказов: <strong>@Model.Orders.Count</strong></span>
+                    <small class="text-muted">
+                        @if (Model.StartDate.HasValue && Model.EndDate.HasValue)
+                        {
+                            <span>Период: @Model.StartDate.Value.ToString("dd.MM.yyyy") - @Model.EndDate.Value.ToString("dd.MM.yyyy")</span>
+                        }
+                    </small>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Клиент</th>
+                            <th>Статус</th>
+                            <th>Доставка</th>
+                            <th>Сумма</th>
+                            <th>Доставка</th>
+                            <th>Итого</th>
+                            <th>Город</th>
+                            <th>Адрес</th>
+                            <th>Дата</th>
+                            <th>Комментарий</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.Orders)
+                        {
+                            <tr>
+                                <td>@order.Id</td>
+                                <td>@order.UserName</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(order.StatusName)">
+                                        @order.StatusName
+                                    </span>
+                                </td>
+                                <td>@order.DeliveryMethodName</td>
+                                <td>
+                                    @if (order.TotalAmount.HasValue)
+                                    {
+                                        <span>@order.TotalAmount?.ToString("0.00") ₽</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (order.DeliveryPrice.HasValue)
+                                    {
+                                        <span>@order.DeliveryPrice?.ToString("0.00") ₽</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (order.TotalAmount.HasValue && order.DeliveryPrice.HasValue)
+                                    {
+                                        <span class="fw-bold">@((order.TotalAmount + order.DeliveryPrice)?.ToString("0.00")) ₽</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>@(order.DeliveryCity ?? "—")</td>
+                                <td>@(order.DeliveryAddress ?? "—")</td>
+                                <td>
+                                    <span class="small">@order.CreateDate.ToLocalTime().ToString("dd.MM.yyyy")</span>
+                                    <br>
+                                    <span class="text-muted smaller">@order.CreateDate.ToLocalTime().ToString("HH:mm")</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(order.Comment))
+                                    {
+                                        <span class="text-muted small" title="@order.Comment">
+                                            @(order.Comment.Length > 20 ? order.Comment.Substring(0, 20) + "..." : order.Comment)
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    <a asp-page="/Orders/Details" asp-route-id="@order.Id"
+                                       class="btn btn-sm btn-primary">
+                                        Детали
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+@section Scripts {
+    <script>
+        // Устанавливаем максимальную дату для поля "по" как сегодня
+        document.addEventListener('DOMContentLoaded', function() {
+            const endDateInput = document.querySelector('input[asp-for="EndDate"]');
+            const today = new Date().toISOString().split('T')[0];
+            if (endDateInput) {
+                endDateInput.max = today;
+            }
+
+            // Устанавливаем максимальную дату для поля "с" как выбранная дата "по"
+            const startDateInput = document.querySelector('input[asp-for="StartDate"]');
+            if (endDateInput && startDateInput) {
+                endDateInput.addEventListener('change', function() {
+                    startDateInput.max = this.value;
+                });
+            }
+        });
+    </script>
+}
